@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat en Tiempo Real</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <!-- Lista de usuarios conectados en la columna derecha -->
+                <div id="user-list">
+                    <h2>Usuarios Conectados</h2>
+                    <ul id="users" class="list-group"></ul>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <!-- Chat en la columna izquierda -->
+                <h1>Chat en Tiempo Real</h1>
+                <ul id="chat-messages" class="list-group"></ul>
+                <div class="input-group">
+                    <input id="message" type="text" class="form-control" placeholder="Escribe tu mensaje">
+                    <div class="input-group-append">
+                        <button onclick="enviarMensaje()" class="btn btn-primary">Enviar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const username = prompt('Ingresa tu nombre de usuario:');
+        socket.emit('join chat', username); // Enviar el nombre de usuario al servidor
+
+        function enviarMensaje() {
+            const mensaje = document.getElementById('message').value;
+            const nombreUsuario = username; // Obtener el nombre de usuario del cliente
+            var mensajeConNombre = {
+                username: nombreUsuario,
+                text: mensaje,
+                timestamp: new Date().toLocaleTimeString(),
+                align: 'right',
+            };
+            
+            socket.emit('chat message', mensajeConNombre); // Enviar el mensaje con el nombre de usuario
+            document.getElementById('message').value = '';
+        };
+
+        socket.on('chat message', function (msg) {
+            const listaMensajes = document.getElementById('chat-messages');
+            const mensajeElement = document.createElement('li');
+
+            // Verificar si el mensaje fue enviado por el usuario actual
+            if (msg.username === username) {
+                // Si el mensaje fue enviado por el usuario actual, alinea a la derecha
+                mensajeElement.classList.add('text-right', 'bg-primary', 'text-white');
+            } else {
+                // Si el mensaje fue enviado por otro usuario, alinea a la izquierda
+                mensajeElement.classList.add('text-left', 'bg-secondary', 'text-white');
+            }
+
+            mensajeElement.textContent = msg.username + ': ' + msg.text.text + ' ' + msg.timestamp;
+
+            listaMensajes.appendChild(mensajeElement);
+        });
+
+        function actualizarListaUsuarios(usuarios) {
+            const listaUsuarios = document.getElementById('users');
+            listaUsuarios.innerHTML = '';
+
+            usuarios.forEach(function (usuario) {
+                const itemUsuario = document.createElement('li');
+                itemUsuario.textContent = usuario;
+                listaUsuarios.appendChild(itemUsuario);
+            });
+        };
+
+        socket.on('user list', function (usuarios) {
+            actualizarListaUsuarios(usuarios);
+        });
+
+    </script>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
