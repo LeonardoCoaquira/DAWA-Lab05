@@ -1,92 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat en Tiempo Real</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Chat con Socket.IO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="./styles.css">
 </head>
+
 <body>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3">
-                <!-- Lista de usuarios conectados en la columna derecha -->
-                <div id="user-list">
-                    <h2>Usuarios Conectados</h2>
-                    <ul id="users" class="list-group"></ul>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="user-info">
+                <div class="avatar">
+                    <img src="./src/goku.avif">
+                </div>
+                <div class="user-details">
+                    <div class="username">Juan</div>
+                    <div class="status">En línea</div>
                 </div>
             </div>
-            <div class="col-md-9">
-                <!-- Chat en la columna izquierda -->
-                <h1>Chat en Tiempo Real</h1>
-                <ul id="chat-messages" class="list-group"></ul>
-                <div class="input-group">
-                    <input id="message" type="text" class="form-control" placeholder="Escribe tu mensaje">
-                    <div class="input-group-append">
-                        <button onclick="enviarMensaje()" class="btn btn-primary">Enviar</button>
-                    </div>
-                </div>
+            <div class="icons">
+                <i class="fas fa-video"></i>
+                <i class="fas fa-phone"></i>
+                <i class="fas fa-ellipsis-v"></i>
             </div>
         </div>
+
+
+        <div id="customAlert" class="custom-alert"> 
+            <div class="custom-alert-content">
+                <span id="customAlertMessage"></span>
+                <button onclick="closeCustomAlert()">OK</button>
+            </div>
+        </div>
+
+
+        <div class="chat-messages" id="chat-messages">
+            <!-- Mensajes se llenarán aquí -->
+        </div>
+
+        <div class="chat-inputs">
+            <div class="chat-input">
+                <input type="text" id="username" placeholder="Tu nombre (Chat 1)" onkeyup="checkInputs()">
+                <input type="text" id="message" placeholder="Escribe tu mensaje (Chat 1)" onkeyup="checkInputs()">
+                <input type="file" id="imageInput" accept="image/*" onchange="previewImage(this, 'imagePreview')">
+                <button onclick="sendMessage()" id="sendButton1" disabled>Enviar (Chat 1)</button>
+            </div>
+        
+            <div class="chat-input">
+                <input type="text" id="username2" placeholder="Tu nombre (Chat 2)" onkeyup="checkInputs()">
+                <input type="text" id="message2" placeholder="Escribe tu mensaje (Chat 2)" onkeyup="checkInputs()">
+                <input type="file" id="imageInput2" accept="image/*" onchange="previewImage(this, 'imagePreview2')">
+                <button onclick="sendMessage2()" id="sendButton2" disabled>Enviar (Chat 2)</button>
+            </div>
+        </div>
+        
+
+        <div class="image-preview" id="imagePreview"></div>
+        <div class="image-preview" id="imagePreview2"></div>
     </div>
+
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-
-        const username = prompt('Ingresa tu nombre de usuario:');
-        socket.emit('join chat', username); // Enviar el nombre de usuario al servidor
-
-        function enviarMensaje() {
-            const mensaje = document.getElementById('message').value;
-            const nombreUsuario = username; // Obtener el nombre de usuario del cliente
-            var mensajeConNombre = {
-                username: nombreUsuario,
-                text: mensaje,
-                timestamp: new Date().toLocaleTimeString(),
-                align: 'right',
-            };
-            
-            socket.emit('chat message', mensajeConNombre); // Enviar el mensaje con el nombre de usuario
-            document.getElementById('message').value = '';
-        };
-
-        socket.on('chat message', function (msg) {
-            const listaMensajes = document.getElementById('chat-messages');
-            const mensajeElement = document.createElement('li');
-
-            // Verificar si el mensaje fue enviado por el usuario actual
-            if (msg.username === username) {
-                // Si el mensaje fue enviado por el usuario actual, alinea a la derecha
-                mensajeElement.classList.add('text-right', 'bg-primary', 'text-white');
-            } else {
-                // Si el mensaje fue enviado por otro usuario, alinea a la izquierda
-                mensajeElement.classList.add('text-left', 'bg-secondary', 'text-white');
-            }
-
-            mensajeElement.textContent = msg.username + ': ' + msg.text.text + ' ' + msg.timestamp;
-
-            listaMensajes.appendChild(mensajeElement);
-        });
-
-        function actualizarListaUsuarios(usuarios) {
-            const listaUsuarios = document.getElementById('users');
-            listaUsuarios.innerHTML = '';
-
-            usuarios.forEach(function (usuario) {
-                const itemUsuario = document.createElement('li');
-                itemUsuario.textContent = usuario;
-                listaUsuarios.appendChild(itemUsuario);
-            });
-        };
-
-        socket.on('user list', function (usuarios) {
-            actualizarListaUsuarios(usuarios);
-        });
-
-    </script>
-    
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="./script.js"></script>
 </body>
+
 </html>
